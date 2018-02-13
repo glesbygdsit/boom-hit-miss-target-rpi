@@ -13,9 +13,9 @@ pyserial = "*"
 [dev-packages]
 
 pytest = "*"
-pytest-watch = "*"
 mock = "*"
 pytest-mock = "*"
+pytest-watch = "*"
 
 
 [requires]

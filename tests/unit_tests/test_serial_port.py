@@ -1,18 +1,9 @@
 import mock
 import pytest
+import serial
 from pytest_mock import mocker
 from unittest.mock import ANY
-#from boom.serial_port import SerialPort
-
-
-import serial
-class SerialPort:
-    def __init__(self, port = "/dev/ttyACM0", baudrate = 115200, timeout = 0):
-        self.serialPort = serial.Serial(port, baudrate, timeout)
-
-    def read(self, bytesToRead = 1):
-        self.serialPort.read(bytesToRead)
-
+from boom.serial_port import SerialPort
 
 @mock.patch("serial.Serial")
 class TestSerialPort_Open():
@@ -43,10 +34,8 @@ class TestSerialPort_Open():
         spr = SerialPort("name", 123, timeout)
         serial.Serial.assert_called_once_with(ANY, ANY, timeout)
 
-# TODO: The following tests are very bad tests since they knows about the serialPort member of SerialPort
+# TODO: The following tests are very bad tests since they know about the serialPort member of SerialPort
 # Mock object should be injected instead I suppose
-
-
 @mock.patch("serial.Serial")
 class TestSerialPort_Read():
     @pytest.fixture
@@ -64,3 +53,9 @@ class TestSerialPort_Read():
         port = self.mocked_serial_port(mocker)
         port.read(1000)
         port.serialPort.read.assert_called_once_with(1000)
+
+    def test_read_returns_what_pyserial_gives(self, mocker):
+        port = self.mocked_serial_port(mocker)
+        port.serialPort.read.return_value = b",1234"
+        readData = port.read(1000)
+        assert readData == b",1234"
