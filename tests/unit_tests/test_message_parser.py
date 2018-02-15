@@ -1,44 +1,5 @@
 import pytest
-
-class MessageParser():
-    def __init__(self):
-        self.buffer = bytearray(b"")
-
-    def parse(self, byte_buffer):
-        splitted = byte_buffer.split(b',')
-        result = []
-        if not len(splitted):
-            print("nothing splitted")
-            return result
-
-        if not len(splitted[0]):
-            print("new message, clear buffer")
-            self.buffer.clear()
-
-        if len(self.buffer):
-            self.buffer.extend(splitted[0])
-            print("extend " + str(splitted[0]))
-            print("check " + str(self.buffer))
-            if len(self.buffer) == 4:
-                result.append(int(self.buffer.decode("ascii"), 16))
-                self.buffer.clear()
-            #else:
-            #self.buffer.clear()    
-
-        for msg in [x for x in splitted[1:] if len(x) == 4]:
-            try:
-                print("adding val: " + str(msg))
-                value = int(msg.decode("ascii"), 16)
-                result.append(value)
-            except ValueError:
-                pass
-        
-        if not len(self.buffer) and len(splitted[-1]) != 4:
-            print("add " + str(splitted[-1]))
-            self.buffer.extend(splitted[-1])
-
-        return result
-
+from boom.message_parser import MessageParser
 
 @pytest.fixture
 def message_parser():
@@ -96,7 +57,7 @@ class Test_ParsesMessagesDecodesAsHexNoChunks:
     def test_spaces_are_not_accepted(self):
         assert [0x1234] == message_parser().parse(b",1234, DEFG")
 
-class Test_ParsesMessagesInTwo:
+class Test_ParsesMessagesInChunks:
     def test_single_message_in_two_chunks(self):
         parser = message_parser()
         parser.parse(b",12")
@@ -125,6 +86,7 @@ class Test_ParsesMessagesInTwo:
         parser.parse(b",1234,56")
         assert [0x1111] == parser.parse(b",1111")
 
+    # TODO: following case is debatable, should probably wait for separator to consider chunked message to be valid
     def test_multiple_chunks_with_single_byte_in_each_bad_formatted(self):
         parser = message_parser()
         parser.parse(b",")
@@ -132,5 +94,3 @@ class Test_ParsesMessagesInTwo:
         parser.parse(b"2")
         parser.parse(b"3")
         assert [0x1234] == parser.parse(b"4")
-
-# TODO: above case is debatable, should probably wait for separator to consider chunked message to be valid
