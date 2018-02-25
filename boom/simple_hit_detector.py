@@ -7,7 +7,7 @@ class SimpleHitDetector:
     def detect_hit(self, values):
         hits = [x for x in values if x >= self.hitValue]
         if len(hits):
-            self.lastHitValue = hits[-1]
+            self.lastHitValue = max(hits)
             return True
 
         return False

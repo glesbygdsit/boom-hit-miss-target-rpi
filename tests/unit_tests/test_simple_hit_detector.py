@@ -31,9 +31,9 @@ def test_get_last_hit_fraction_hit_10_percentage():
     detector.detect_hit([10])
     assert detector.get_last_hit_fraction() == 0.1
 
-def test_get_last_hit_fraction_gives_fraction_based_on_last_value_when_multiple_are_given():
-    detector = SimpleHitDetector(100, 10)
-    detector.detect_hit([10, 30, 50])
+def test_get_last_hit_fraction_gives_fraction_based_on_last_max_value_when_multiple_are_given():
+    detector = SimpleHitDetector(maxValue=100, hitValue=10)
+    detector.detect_hit([10, 30, 50, 20])
     assert detector.get_last_hit_fraction() == 0.5
 
 def test_change_hit_value():
