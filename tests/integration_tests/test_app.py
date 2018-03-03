@@ -3,33 +3,41 @@ import asyncio
 import time
 import serial
 from boom.app import App
+from boom.serial_port import SerialPort
+from http.server import HTTPServer, BaseHTTPRequestHandler
 
-async def run_app():
-    print("start of run_app")
-    await asyncio.sleep(0.2)
-    print("end of run_app")
+class PostHandler(BaseHTTPRequestHandler):
+    def do_POST(self):
+        print("POST!!")
 
-async def main():
-    print("start of main")
-    task = asyncio.ensure_future(run_app())
-    await asyncio.sleep(0.1)
-    print("after task creation")
-    await task
-    print("end of main")
+async def run_http_server(server):
+    print("serve_forever")
+    server.serve_forever()
+    print("efter serve_forever")
+
+async def run_app(app):
+    app.run()
+
+async def run_test():
+    serialPort = SerialPort("loop://")
+    app = App(serialPort, 0xFFFF, 0xA, "http://localhost:11337", "1337")
+    
+    server = HTTPServer(("localhost", 11337), PostHandler)
+    server.allow_reuse_address = True
+    
+    app_task = asyncio.ensure_future(run_app(app))
+    #http_task = ayncio.ensure_future(run_http_server(server))
+
+    serialPort.write(b',1234')
+    
+    server.shutdown()
+    serialPort.serialPort.close()
+    app.stop()
+    #await http_task
+    #await app_task
 
 def test_app():
-    #app = App("loop://", 0xF, 0xA, "http://localhost:11337", "1337")
-    #app.run()
-   behöver skicka in en skapad serial port i app så att jag kan trycka på dada
-   wrappa i SampleReader eller nått sånt (SerialPortSampleReader)
-   
-    port = serial.serial_for_url("loop://", timeout=0)
-    port.write(b'1234')
-    result = port.read(4)
-    print("result: {}".format(str(result)))
-
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(main())
-
+    loop.run_until_complete(run_test())
 
     assert False
